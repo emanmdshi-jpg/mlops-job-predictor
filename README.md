@@ -126,9 +126,16 @@ We have integrated advanced design patterns to address the "High-Cardinality" an
 ### 🧠 2. Problem Representation & Training
 > *Requirement: Incorporate strategies for resilient modeling.*
 
-*   **Pattern: PROBLEM REFRAMING**
-    *   **Solution**: Framed as Multi-Class Classification but outputting **Probabilities** (`predict_proba`).
-    *   **Justification**: Allows uncertainty handling (Confidence Scores) rather than just hard predictions.
+*   **Pattern: PROBLEM REFRAMING (Deterministic -> Probabilistic)**
+    *   **Context**: Naïve classification forces a hard decision even when uncertain, leading to high operational risk.
+    *   **Solution**: Reframed simply assigning a role to **Probabilistic Multi-Class Modeling**.
+    *   **Justification**:
+        | Aspect | Naïve Approach | Our Reframed Solution |
+        | :--- | :--- | :--- |
+        | **Output** | Single Label (Hard Decision) | **Probability Distribution** |
+        | **Uncertainty** | Ignored | **Explicitly Modeled** |
+        | **Risk Handling** | Implicit | **Auditable via Fallback Policy** |
+    *   **Business Value**: Decouples prediction from decision-making, allowing business logic (Fallbacks) to intervene.
 
 *   **Pattern: ENSEMBLES (Bagging & Boosting)**
     *   **Solution**: Used `VotingClassifier` satisfying:
