@@ -54,7 +54,18 @@ async def lifespan(app: FastAPI):
     yield
     print("Shutting down service...")
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Job Role Prediction Service", lifespan=lifespan)
+
+# Enable CORS for Dashboard
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (necessary for file://)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- 2. Schemas ---
 

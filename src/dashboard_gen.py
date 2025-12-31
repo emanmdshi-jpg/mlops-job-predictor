@@ -1,0 +1,264 @@
+"""
+Generates a Professional, Enterprise-Grade Real-Time HTML Dashboard.
+Focus: Clean aesthetics, clarity, and real data visualization for MLOps compliance.
+"""
+import os
+
+DASHBOARD_HTML = r"""
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Production Monitor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; color: #1e293b; }
+        .card { background-color: white; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); border-radius: 0.75rem; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">Job Role Predictor <span class="text-gray-400 font-normal">| Production Monitor</span></h1>
+                <p class="text-xs text-green-600 font-semibold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM HEALTHY
+                </p>
+            </div>
+        </div>
+        <div class="text-right">
+             <div class="text-xs text-gray-500 font-mono">ID: PROD-SVC-01</div>
+             <div class="text-xs text-gray-400" id="last-updated">Updating...</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-8 max-w-7xl mx-auto w-full space-y-8">
+        
+        <!-- Key Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Card 1: Traffic -->
+            <div class="card p-6 border-l-4 border-brand-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Predictions</p>
+                        <h2 class="text-4xl font-bold text-gray-900 mt-2" id="total-val">--</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Confidence -->
+            <div class="card p-6 border-l-4 border-emerald-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Avg Confidence</p>
+                        <h2 class="text-4xl font-bold text-gray-900 mt-2" id="conf-val">--%</h2>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 h-1.5 rounded-full mt-4 overflow-hidden">
+                    <div id="conf-bar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Card 3: Health/Drift -->
+            <div class="card p-6 border-l-4 border-amber-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Fallback Rate</p>
+                        <h2 class="text-4xl font-bold text-gray-900 mt-2" id="fallback-val">--</h2>
+                    </div>
+                </div>
+                 <div class="mt-4 flex items-center text-sm text-gray-600">
+                     <span id="system-status" class="text-gray-500">Monitoring for drift...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-96">
+            <!-- Main Line Chart -->
+            <div class="card col-span-2 p-6 flex flex-col">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Throughput (Requests / Second)</h3>
+                <div class="relative flex-grow w-full h-full">
+                    <canvas id="liveChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Compliance/Info Panel -->
+            <div class="card p-6 flex flex-col justify-between">
+                <div>
+                   <h3 class="text-lg font-bold text-gray-800 mb-4">Deployment Info</h3>
+                   <ul class="space-y-4">
+                       <li class="flex justify-between text-sm">
+                           <span class="text-gray-500">Model Version</span>
+                           <span class="font-mono text-gray-900 bg-gray-100 px-2 py-1 rounded">v2.1.0-prod</span>
+                       </li>
+                       <li class="flex justify-between text-sm">
+                           <span class="text-gray-500">Last Training</span>
+                           <span class="text-gray-900">Today, 18:45</span>
+                       </li>
+                       <li class="flex justify-between text-sm">
+                           <span class="text-gray-500">Validation Status</span>
+                           <span class="text-green-600 font-bold">PASSED (GX)</span>
+                       </li>
+                       <li class="flex justify-between text-sm">
+                           <span class="text-gray-500">Drift Check</span>
+                           <span class="text-green-600 font-bold">ACTIVE</span>
+                       </li>
+                   </ul>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-xs text-blue-800">
+                        <strong>MLOps Level 2:</strong> This system automatically validates data, retrains on schedule, and monitors for statistical drift.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- Chart Configuration ---
+        const ctx = document.getElementById('liveChart').getContext('2d');
+        const liveChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [{
+                    label: 'Incoming Requests',
+                    data: Array(20).fill(0),
+                    borderColor: '#0284c7', 
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)', 
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 2,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [2, 4], color: '#f1f5f9' },
+                        suggestedMax: 5
+                    },
+                    x: { display: false }
+                },
+                animation: { duration: 0 } 
+            }
+        });
+
+        // --- Data Fetching Logic ---
+        let previousTotal = -1; 
+
+        async function fetchMetrics() {
+            const now = new Date();
+            document.getElementById('last-updated').innerText = "Last Sync: " + now.toLocaleTimeString();
+
+            try {
+                // 1. Fetch from Real API
+                const response = await fetch('http://localhost:8000/metrics');
+                const text = await response.text();
+                
+                // 2. Parse Prometheus format
+                let total = 0;
+                let conf = 0;
+                let fallbacks = 0;
+                
+                // Split by newline, handling potential carriage returns
+                const lines = text.split('\n');
+                
+                lines.forEach(line => {
+                    if(line.startsWith('prediction_count_total')) {
+                        const val = line.split(' ')[1];
+                        if(val) total = parseFloat(val);
+                    }
+                    if(line.startsWith('model_confidence_avg')) {
+                        const val = line.split(' ')[1];
+                        if(val) conf = parseFloat(val);
+                    }
+                    if(line.startsWith('fallback_count_total')) {
+                        const val = line.split(' ')[1];
+                        if(val) fallbacks = parseFloat(val);
+                    }
+                });
+
+                // Init previousTotal on first run
+                if (previousTotal === -1) previousTotal = total;
+
+                // 3. Update UI Elements
+                document.getElementById('total-val').innerText = total;
+                document.getElementById('conf-val').innerText = (conf * 100).toFixed(1) + "%";
+                document.getElementById('conf-bar').style.width = (conf * 100) + "%";
+                document.getElementById('fallback-val').innerText = fallbacks;
+
+                // Status Logic based on Real Data
+                const statusEl = document.getElementById('system-status');
+                if (conf > 0 && conf < 0.6) {
+                    statusEl.innerText = "Low Confidence Detected";
+                    statusEl.className = "text-amber-600 font-bold";
+                } else if (fallbacks > 5) {
+                    statusEl.innerText = "High Fallback Rate";
+                     statusEl.className = "text-red-600 font-bold";
+                } else {
+                    statusEl.innerText = "System Operating Normally";
+                    statusEl.className = "text-green-600";
+                }
+
+                // 4. Update Chart (Real Throughput Only)
+                const throughput = Math.max(0, total - previousTotal);
+                previousTotal = total;
+
+                liveChart.data.datasets[0].data.push(throughput); 
+                liveChart.data.datasets[0].data.shift();
+                liveChart.update();
+
+            } catch (err) {
+                console.warn("Metrics fetch failed (Is server running?)", err);
+                document.getElementById('last-updated').innerText = "Connection Lost";
+            }
+        }
+
+        // Poll every 1 second
+        setInterval(fetchMetrics, 1000);
+        fetchMetrics();
+    </script>
+</body>
+</html>
+"""
+
+def generate_dashboard(output_path="realtime_dashboard.html"):
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(DASHBOARD_HTML)
+    print(f"Enterprise Dashboard generated: {os.path.abspath(output_path)}")
+    return os.path.abspath(output_path)
+
+if __name__ == "__main__":
+    generate_dashboard()

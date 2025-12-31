@@ -55,17 +55,29 @@ def run_e2e():
         metrics_res = requests.get("http://localhost:8000/metrics")
         if metrics_res.status_code == 200:
             print("✅ Prometheus metrics endpoint is LIVE.")
-            print("✅ Prometheus metrics endpoint is LIVE.")
-            print("Sample Metrics (Full Output):")
-            print(metrics_res.text)
+            
+            # GENERATE PROFESSIONAL DASHBOARD
+            from src.dashboard_gen import generate_dashboard
+            dashboard_path = generate_dashboard()
+            
+            if dashboard_path:
+                print(f"📊 Opening Professional Dashboard: {dashboard_path}")
+                # Open in default browser
+                if sys.platform == 'win32':
+                    os.startfile(dashboard_path)
+                elif sys.platform == 'darwin':
+                    subprocess.call(['open', dashboard_path])
+                else:
+                    subprocess.call(['xdg-open', dashboard_path])
+                    
     except Exception as e:
         print(f"Metrics check failed: {e}")
 
     print("\n=== Evidence Capture Complete ===")
     print("You can now view:")
-    print("1. MLflow UI: run 'mlflow ui' and check 'JobRole_Prediction_Production'")
-    print("2. Monitoring: check http://localhost:8000/metrics")
-    print("3. Logs: check workflow outputs for CI/CD evidence")
+    print("1. MLflow UI: run 'mlflow ui'")
+    print("2. Dashboard: monitoring_dashboard.html (Opened automatically)")
+    print("3. Logs: check workflow outputs")
     
     print("\nPress Ctrl+C to stop the API service...")
     try:

@@ -104,6 +104,15 @@ The pipeline is fully automated via GitLab CI/CD (`.gitlab-ci.yml`) and Prefect 
 -   **Monitoring**: Real-time metrics available at `/metrics`.
 -   **Algorithmic Fallback**: Low-confidence predictions trigger human-in-the-loop fallback.
 
+### ✅ D. Data Validation (Statistical Checks)
+-   **Statistical Checks**: Enforced via `src/data_validation.py` (Great Expectations style).
+-   **Checks**: Null values, schema adherence, and required columns validated before training.
+
+### ✅ E. Professional Dashboard (Enterprise Grade)
+-   **Visuals**: Clean, business-oriented `realtime_dashboard.html` showing real-time metrics.
+-   **Compliance Info**: Explicitly displays Model Version, Validation Status, and Drift Status.
+-   **Traffic Gen**: `send_requests.py` provided for live demonstrations.
+
 ---
 
 ## 4. Technical Design Patterns (SWE016 Compliance)

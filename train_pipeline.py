@@ -7,6 +7,7 @@ import warnings
 import joblib
 import mlflow
 import mlflow.sklearn
+from mlflow.models import infer_signature
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
@@ -162,6 +163,10 @@ def train_job():
         # 1. Load
         df = load_data(DATA_PATH)
 
+        # 1.5 Data Validation (Pattern: DATA VALIDATION)
+        from src.data_validation import validate_training_data
+        validate_training_data(df)
+
         # 2. Shared Feature Engineering (Pattern: FEATURE CROSS)
         df = preprocess_features(df)
 
@@ -211,7 +216,6 @@ def train_job():
         mlflow.log_metric("log_loss", test_loss)
 
         # 7. Save & Register
-        from mlflow.models import infer_signature
         signature = infer_signature(features_test, y_pred)
 
         joblib.dump(best_model, MODEL_PATH)
