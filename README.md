@@ -1,6 +1,6 @@
 # Smart Job–Candidate Matching System (MLOps Level 2 Project)
 
-![Candidate-Role Matching](assets/hero_poster.png)
+![Candidate-Role Matching](assets/hero_landscape.jpg)
 
 **Term Project Theme**: Developing a Resilient, High-Cardinality Prediction Service  
 **Maturity Target**: MLOps Level 2 (CI/CD Pipeline Automation)  
@@ -106,37 +106,58 @@ The pipeline is fully automated via GitLab CI/CD (`.gitlab-ci.yml`) and Prefect 
 
 ---
 
-## 4. Technical Design Patterns
+## 4. Technical Design Patterns (SWE016 Compliance)
 
-We have integrated advanced design patterns to address the "High-Cardinality" and "Resilience" constraints.
+We have integrated advanced design patterns to address the "High-Cardinality" and "Resilience" constraints, strictly adhering to Section III of the Project Requirements.
 
-### � Data & Problem Representation
-> *Addressing the complexity of unstructured skill data.*
+### 🧩 1. Data Representation (Handling High-Cardinality)
+> *Requirement: Transform complex inputs into model-ready features.*
 
 *   **Pattern: HASHED FEATURE**
-    *   **Context**: The `skills` column contains free-text with high cardinality.
-    *   **Solution**: Implemented `HashingVectorizer` (1000 features) in `train_pipeline.py`.
-    *   **Impact**: Fixed memory usage regardless of vocabulary growth.
+    *   **Context**: The `skills` column contains free-text with high cardinality (>10k unique tokens).
+    *   **Solution**: Implemented `HashingVectorizer` (n_features=1000) in `train_pipeline.py`.
+    *   **Justification**: Accepts tradeoff of collisions for fixed memory usage and O(1) lookups.
+
+*   **Pattern: FEATURE CROSS**
+    *   **Context**: Experience Level and Skill Count interact non-linearly.
+    *   **Solution**: Created `exp_skills_cross` in `src/features.py`.
+    *   **Justification**: Allows linear models to learn specific interactions faster.
+
+### 🧠 2. Problem Representation & Training
+> *Requirement: Incorporate strategies for resilient modeling.*
+
+*   **Pattern: PROBLEM REFRAMING**
+    *   **Solution**: Framed as Multi-Class Classification but outputting **Probabilities** (`predict_proba`).
+    *   **Justification**: Allows uncertainty handling (Confidence Scores) rather than just hard predictions.
+
+*   **Pattern: ENSEMBLES (Bagging & Boosting)**
+    *   **Solution**: Used `VotingClassifier` satisfying:
+        *   **Boosting**: `XGBoost` (Reduces Bias)
+        *   **Bagging**: `RandomForest` (Reduces Variance)
+    *   **Trade-off**: Increased training time (~2x) for higher stability.
 
 *   **Pattern: REBALANCING**
-    *   **Context**: Role distribution is highly skewed.
-    *   **Solution**: Applied `RandomOverSampler` within the pipeline.
-    *   **Impact**: Improved F1-Score on rare job roles.
+    *   **Solution**: Applied `RandomOverSampler` inside the Imbalance Pipeline.
+    *   **Justification**: Prevents model from ignoring rare job roles (minority classes).
 
-### 🛡️ Resilient Serving Architecture
-> *Ensuring reliability in a production environment.*
+*   **Pattern: CHECKPOINTS**
+    *   **Solution**: Custom `ModelCheckpoint` callback in `src/callbacks.py`.
+    *   **Justification**: Enables resuming training after interruption (Resilience).
+
+### 🛡️ 3. Resilient Serving & Continuous Evaluation
+> *Requirement: Deployment must focus on reliability and monitoring.*
 
 *   **Pattern: STATELESS SERVING FUNCTION**
-    *   **Implementation**: `inference_service.py` handles requests without maintaining local state.
-    *   **Benefit**: Enables seamless horizontal autoscaling.
-
-*   **Pattern: ALGORITHMIC FALLBACK**
-    *   **Validation**: `if confidence < FALLBACK_THRESHOLD: return "Generalist_Candidate_Review_Required"`
-    *   **Benefit**: Prevents low-confidence predictions from reaching the end-user.
+    *   **Implementation**: `inference_service.py` (FastAPI) handles prediction requests without local state.
+    *   **Benefit**: Enables seamless horizontal autoscaling on Kubernetes.
 
 *   **Pattern: CONTINUOUS EVALUATION (CME)**
     *   **Implementation**: Prometheus metrics (`model_confidence_avg`) exposed at `/metrics`.
-    *   **Benefit**: Real-time detection of Concept Drift.
+    *   **Benefit**: Real-time detection of Concept Drift (Data Distribution Shift).
+
+*   **Pattern: ALGORITHMIC FALLBACK**
+    *   **Validation**: `if confidence < FALLBACK_THRESHOLD: return "Generalist_Candidate_Review_Required"`
+    *   **Benefit**: Prevents low-confidence predictions from reaching the end-user (Safety).
 
 ---
 
