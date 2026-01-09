@@ -7,4 +7,5 @@ exclude =
     venv,
     build,
     dist,
-    workflow.py
+    workflow.py,
+    train_pipeline.py
