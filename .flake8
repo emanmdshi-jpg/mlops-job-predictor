@@ -1,2 +1,0 @@
-ci: exclude non-production files from flake8
-
