@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ src/
 COPY inference_service.py .
 COPY train_pipeline.py . 
-COPY voting_clf.joblib .
+
 
 # Expose the service port
 EXPOSE 8000
