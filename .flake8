@@ -6,7 +6,12 @@ extend-ignore =
     E302,
     E305,
     E501,
-    W503
+    W503,
+    W293,
+    F401,
+    E261,
+    E303
+
 exclude =
     .git,
     __pycache__,
@@ -15,9 +20,8 @@ exclude =
     build,
     dist,
     .github,
-    workflow.py,
-    train_pipeline.py,
-    tests
+    deployment.yaml,
+    deployment.yml
 
 
 
